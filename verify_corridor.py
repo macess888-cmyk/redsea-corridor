@@ -71,7 +71,7 @@ def verify_receipts() -> None:
     if not files:
         raise FileNotFoundError("No receipts found")
 
-    for idx, path in enumerate(files):
+    for path in files:
         receipt = json.loads(path.read_text(encoding="utf-8"))
         core = {
             k: v for k, v in receipt.items()
@@ -85,6 +85,12 @@ def verify_receipts() -> None:
         if receipt["current_receipt_hash"] != expected_hash:
             raise ValueError(f"Receipt chain break at {path.name}: current hash mismatch")
 
+        if "violation_classes" not in receipt:
+            raise ValueError(f"Missing violation_classes in {path.name}")
+
+        if not isinstance(receipt["violation_classes"], list):
+            raise ValueError(f"violation_classes must be a list in {path.name}")
+
         previous = receipt["current_receipt_hash"]
 
 
@@ -94,7 +100,7 @@ def main() -> None:
     verify_bind_trace_refs(entries)
     verify_status_rules(entries)
     verify_receipts()
-    print("PASS: ledger, bind refs, status rules, and receipt chain verified.")
+    print("PASS: ledger, bind refs, status rules, receipt chain, and multi-violation fields verified.")
 
 
 if __name__ == "__main__":

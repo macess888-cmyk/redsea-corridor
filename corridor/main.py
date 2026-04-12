@@ -3,7 +3,7 @@ import hashlib
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 ARTIFACTS_DIR = Path("artifacts")
 RECEIPTS_DIR = Path("receipts")
@@ -71,24 +71,26 @@ def build_bind_trace(
     execution_origin: str,
     civilian_class_protected: bool,
 ) -> Dict[str, Any]:
-    violation_class: Optional[str] = None
+    violation_classes: List[str] = []
 
     if classification not in {"HUM", "CIV"}:
-        violation_class = "UNPROTECTED_CLASS"
+        violation_classes.append("UNPROTECTED_CLASS")
     if not proof_sources:
-        violation_class = "MISSING_PROOF_SOURCES"
+        violation_classes.append("MISSING_PROOF_SOURCES")
     if not refusal_available:
-        violation_class = "REFUSAL_UNAVAILABLE_AT_BIND"
+        violation_classes.append("REFUSAL_UNAVAILABLE_AT_BIND")
     if execution_origin != "present_state":
-        violation_class = "CARRIED_STATE_EXECUTION"
+        violation_classes.append("CARRIED_STATE_EXECUTION")
     if mission_type_expected != mission_type_actual:
-        violation_class = "MISSION_SCOPE_EXPANSION"
+        violation_classes.append("MISSION_SCOPE_EXPANSION")
     if not route_window_valid:
-        violation_class = "ROUTE_WINDOW_INVALID"
+        violation_classes.append("ROUTE_WINDOW_INVALID")
     if not classification_valid:
-        violation_class = "CLASSIFICATION_INVALID"
+        violation_classes.append("CLASSIFICATION_INVALID")
     if not civilian_class_protected:
-        violation_class = "CIVILIAN_CLASS_NOT_PROTECTED"
+        violation_classes.append("CIVILIAN_CLASS_NOT_PROTECTED")
+
+    primary_violation = violation_classes[0] if violation_classes else None
 
     return {
         "bind_trace_id": str(uuid.uuid4()),
@@ -115,7 +117,8 @@ def build_bind_trace(
         "refusal_available_at_bind": refusal_available,
         "execution_origin": execution_origin,
         "civilian_class_protected": civilian_class_protected,
-        "violation_class": violation_class,
+        "violation_class": primary_violation,
+        "violation_classes": violation_classes,
     }
 
 
@@ -171,7 +174,7 @@ def record_event(
         "bind_trace_ref": bind_trace_hash,
         "status": (
             "FAILED"
-            if bind_trace["violation_class"] is not None
+            if bind_trace["violation_classes"]
             else "COMPLETE" if event_type == "EXIT" else "ACTIVE"
         ),
     }
@@ -213,8 +216,9 @@ def build_receipt(
             "confidence_score": 1.0 if len(sources) == 3 else 0.66 if len(sources) == 2 else 0.33,
             "independent_verification": bool(sources),
         },
-        "outcome": "FAIL" if bind_trace["violation_class"] else "PASS",
+        "outcome": "FAIL" if bind_trace["violation_classes"] else "PASS",
         "violation_class": bind_trace["violation_class"],
+        "violation_classes": bind_trace["violation_classes"],
     }
 
     receipt_path = RECEIPTS_DIR / f"{receipt_core['receipt_id']}.json"
@@ -325,7 +329,7 @@ def run_demo() -> None:
     )
 
     summary = {
-        "status": "PASS" if bind_trace["violation_class"] is None else "FAIL",
+        "status": "PASS" if not bind_trace["violation_classes"] else "FAIL",
         "bind_trace": str(bind_path),
         "ledger_path": str(LEDGER_PATH),
         "entry_event": entry_record["ledger_id"],
@@ -333,6 +337,7 @@ def run_demo() -> None:
         "exit_event": exit_record["ledger_id"],
         "receipt_id": receipt["receipt_id"],
         "violation_class": bind_trace["violation_class"],
+        "violation_classes": bind_trace["violation_classes"],
     }
     write_json(ARTIFACTS_DIR / "run_summary.json", summary)
     print("Artifacts written:")

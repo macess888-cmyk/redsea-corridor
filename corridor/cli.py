@@ -1,11 +1,11 @@
 import argparse
+import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
+from typing import Any, Dict, List
 
 from corridor.main import (
     ARTIFACTS_DIR,
-    RECEIPTS_DIR,
     build_bind_trace,
     build_receipt,
     ensure_dirs,
@@ -22,6 +22,13 @@ def utc_now() -> str:
 def normalize_sources(raw: str) -> List[str]:
     parts = [p.strip().upper() for p in raw.split(",") if p.strip()]
     return parts
+
+
+def load_json(path: str) -> Dict[str, Any]:
+    file_path = Path(path)
+    if not file_path.exists():
+        raise FileNotFoundError(f"JSON file not found: {file_path}")
+    return json.loads(file_path.read_text(encoding="utf-8"))
 
 
 def add_event(
@@ -82,6 +89,7 @@ def add_event(
     print(f"status = {entry['status']}")
     print(f"bind_trace = {bind_path}")
     print(f"violation_class = {bind_trace['violation_class']}")
+    print(f"violation_classes = {bind_trace['violation_classes']}")
 
 
 def add_receipt(
@@ -132,6 +140,50 @@ def add_receipt(
     print(f"outcome = {receipt['outcome']}")
     print(f"bind_trace = {bind_path}")
     print(f"violation_class = {bind_trace['violation_class']}")
+    print(f"violation_classes = {bind_trace['violation_classes']}")
+
+
+def run_event_json(path: str) -> None:
+    data = load_json(path)
+    add_event(
+        event_type=str(data["event_type"]).upper(),
+        vessel_id=data["vessel_id"],
+        imo=data["imo"],
+        classification=data["classification"],
+        flag=data["flag"],
+        entry_point=data["entry_point"],
+        exit_point=data["exit_point"],
+        eta_start=data["eta_start"],
+        eta_end=data["eta_end"],
+        declared_path=data["declared_path"],
+        mission_expected=data.get("mission_expected", "ESCORT"),
+        mission_actual=data.get("mission_actual", "ESCORT"),
+        proof_sources=data.get("proof_sources", ["AIS", "RADAR", "EO"]),
+        refusal_available=data.get("refusal_available", False),
+        execution_origin=data.get("execution_origin", "present_state"),
+        civilian_class_protected=data.get("civilian_class_protected", False),
+        classification_valid=data.get("classification_valid", False),
+        route_window_valid=data.get("route_window_valid", False),
+    )
+
+
+def run_receipt_json(path: str) -> None:
+    data = load_json(path)
+    add_receipt(
+        vessel_id=data["vessel_id"],
+        classification=data["classification"],
+        event_type=data["event_type"],
+        location=data["location"],
+        description=data["description"],
+        mission_expected=data.get("mission_expected", "ESCORT"),
+        mission_actual=data.get("mission_actual", "ESCORT"),
+        proof_sources=data.get("proof_sources", ["AIS", "RADAR", "EO"]),
+        refusal_available=data.get("refusal_available", False),
+        execution_origin=data.get("execution_origin", "present_state"),
+        civilian_class_protected=data.get("civilian_class_protected", False),
+        classification_valid=data.get("classification_valid", False),
+        route_window_valid=data.get("route_window_valid", False),
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -142,6 +194,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("demo", help="Run the built-in demo")
+    sub.add_parser("verify", help="Run local verifier")
 
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--vessel-id", required=True)
@@ -181,7 +234,11 @@ def build_parser() -> argparse.ArgumentParser:
     receipt.add_argument("--classification-valid", action="store_true")
     receipt.add_argument("--route-window-valid", action="store_true")
 
-    sub.add_parser("verify", help="Run local verifier")
+    event_json = sub.add_parser("event-json", help="Record event from JSON file")
+    event_json.add_argument("--file", required=True)
+
+    receipt_json = sub.add_parser("receipt-json", help="Create receipt from JSON file")
+    receipt_json.add_argument("--file", required=True)
 
     return parser
 
@@ -238,6 +295,14 @@ def main() -> None:
             classification_valid=args.classification_valid,
             route_window_valid=args.route_window_valid,
         )
+        return
+
+    if args.command == "event-json":
+        run_event_json(args.file)
+        return
+
+    if args.command == "receipt-json":
+        run_receipt_json(args.file)
         return
 
 

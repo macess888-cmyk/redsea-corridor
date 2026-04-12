@@ -50,7 +50,7 @@ def add_event(
     civilian_class_protected: bool,
     classification_valid: bool,
     route_window_valid: bool,
-) -> None:
+) -> Dict[str, Any]:
     ensure_dirs()
 
     bind_trace = build_bind_trace(
@@ -91,6 +91,14 @@ def add_event(
     print(f"violation_class = {bind_trace['violation_class']}")
     print(f"violation_classes = {bind_trace['violation_classes']}")
 
+    return {
+        "ledger_id": entry["ledger_id"],
+        "status": entry["status"],
+        "bind_trace_path": str(bind_path),
+        "violation_class": bind_trace["violation_class"],
+        "violation_classes": bind_trace["violation_classes"],
+    }
+
 
 def add_receipt(
     vessel_id: str,
@@ -106,7 +114,7 @@ def add_receipt(
     civilian_class_protected: bool,
     classification_valid: bool,
     route_window_valid: bool,
-) -> None:
+) -> Dict[str, Any]:
     ensure_dirs()
 
     bind_trace = build_bind_trace(
@@ -142,10 +150,18 @@ def add_receipt(
     print(f"violation_class = {bind_trace['violation_class']}")
     print(f"violation_classes = {bind_trace['violation_classes']}")
 
+    return {
+        "receipt_id": receipt["receipt_id"],
+        "outcome": receipt["outcome"],
+        "bind_trace_path": str(bind_path),
+        "violation_class": bind_trace["violation_class"],
+        "violation_classes": bind_trace["violation_classes"],
+    }
 
-def run_event_json(path: str) -> None:
+
+def run_event_json(path: str) -> Dict[str, Any]:
     data = load_json(path)
-    add_event(
+    return add_event(
         event_type=str(data["event_type"]).upper(),
         vessel_id=data["vessel_id"],
         imo=data["imo"],
@@ -167,9 +183,9 @@ def run_event_json(path: str) -> None:
     )
 
 
-def run_receipt_json(path: str) -> None:
+def run_receipt_json(path: str) -> Dict[str, Any]:
     data = load_json(path)
-    add_receipt(
+    return add_receipt(
         vessel_id=data["vessel_id"],
         classification=data["classification"],
         event_type=data["event_type"],
@@ -184,6 +200,73 @@ def run_receipt_json(path: str) -> None:
         classification_valid=data.get("classification_valid", False),
         route_window_valid=data.get("route_window_valid", False),
     )
+
+
+def batch_run(folder: str, mode: str) -> None:
+    ensure_dirs()
+
+    folder_path = Path(folder)
+    if not folder_path.exists():
+        raise FileNotFoundError(f"Folder not found: {folder_path}")
+
+    files = sorted(folder_path.glob("*.json"))
+    if not files:
+        raise FileNotFoundError(f"No JSON files found in: {folder_path}")
+
+    results: List[Dict[str, Any]] = []
+    passed = 0
+    failed = 0
+
+    for path in files:
+        try:
+            if mode == "events":
+                result = run_event_json(str(path))
+                outcome = "PASS" if not result["violation_classes"] else "FAIL"
+            elif mode == "receipts":
+                result = run_receipt_json(str(path))
+                outcome = result["outcome"]
+            else:
+                raise ValueError(f"Unsupported batch mode: {mode}")
+
+            if outcome == "PASS":
+                passed += 1
+            else:
+                failed += 1
+
+            results.append({
+                "file": str(path),
+                "outcome": outcome,
+                **result,
+            })
+
+        except Exception as exc:
+            failed += 1
+            results.append({
+                "file": str(path),
+                "outcome": "ERROR",
+                "error": str(exc),
+            })
+            print(f"ERROR in {path}: {exc}")
+
+    summary = {
+        "timestamp_utc": utc_now(),
+        "mode": mode,
+        "folder": str(folder_path),
+        "file_count": len(files),
+        "passed": passed,
+        "failed": failed,
+        "results": results,
+    }
+
+    summary_path = ARTIFACTS_DIR / f"batch_{mode}_summary.json"
+    write_json(summary_path, summary)
+
+    print("BATCH complete.")
+    print(f"mode = {mode}")
+    print(f"files = {len(files)}")
+    print(f"passed = {passed}")
+    print(f"failed = {failed}")
+    print(f"summary = {summary_path}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -239,6 +322,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     receipt_json = sub.add_parser("receipt-json", help="Create receipt from JSON file")
     receipt_json.add_argument("--file", required=True)
+
+    batch_events = sub.add_parser("batch-events", help="Run all event JSON files in a folder")
+    batch_events.add_argument("--folder", required=True)
+
+    batch_receipts = sub.add_parser("batch-receipts", help="Run all receipt JSON files in a folder")
+    batch_receipts.add_argument("--folder", required=True)
 
     return parser
 
@@ -303,6 +392,14 @@ def main() -> None:
 
     if args.command == "receipt-json":
         run_receipt_json(args.file)
+        return
+
+    if args.command == "batch-events":
+        batch_run(args.folder, mode="events")
+        return
+
+    if args.command == "batch-receipts":
+        batch_run(args.folder, mode="receipts")
         return
 
 

@@ -1,0 +1,15 @@
+{
+  "vessel_id": "RS-REAL-PASS-001",
+  "classification": "CIV",
+  "event_type": "SAFE_PASSAGE",
+  "location": "13.0500,43.9500",
+  "description": "Civilian commercial vessel completed protected corridor passage under verified escort conditions.",
+  "mission_expected": "ESCORT",
+  "mission_actual": "ESCORT",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": true,
+  "execution_origin": "present_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

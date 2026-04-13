@@ -123,6 +123,54 @@ class CorridorTestCase(unittest.TestCase):
         self.assertIn("CLASSIFICATION_INVALID", bind_trace["violation_classes"])
         self.assertIn("CIVILIAN_CLASS_NOT_PROTECTED", bind_trace["violation_classes"])
 
+    def test_primary_violation_proof_fail(self) -> None:
+        bind_trace = build_bind_trace(
+            vessel_id="RS-ADV-PROOF-001",
+            classification="CIV",
+            mission_type_expected="ESCORT",
+            mission_type_actual="ESCORT",
+            route_window_valid=True,
+            classification_valid=True,
+            proof_sources=[],
+            refusal_available=True,
+            execution_origin="present_state",
+            civilian_class_protected=True,
+        )
+        self.assertEqual(bind_trace["violation_class"], "MISSING_PROOF_SOURCES")
+        self.assertEqual(bind_trace["violation_classes"], ["MISSING_PROOF_SOURCES"])
+
+    def test_primary_violation_refusal_fail(self) -> None:
+        bind_trace = build_bind_trace(
+            vessel_id="RS-ADV-REFUSAL-001",
+            classification="CIV",
+            mission_type_expected="ESCORT",
+            mission_type_actual="ESCORT",
+            route_window_valid=True,
+            classification_valid=True,
+            proof_sources=["AIS", "RADAR", "EO"],
+            refusal_available=False,
+            execution_origin="present_state",
+            civilian_class_protected=True,
+        )
+        self.assertEqual(bind_trace["violation_class"], "REFUSAL_UNAVAILABLE_AT_BIND")
+        self.assertEqual(bind_trace["violation_classes"], ["REFUSAL_UNAVAILABLE_AT_BIND"])
+
+    def test_primary_violation_scope_fail(self) -> None:
+        bind_trace = build_bind_trace(
+            vessel_id="RS-ADV-SCOPE-001",
+            classification="CIV",
+            mission_type_expected="ESCORT",
+            mission_type_actual="EXPANDED",
+            route_window_valid=True,
+            classification_valid=True,
+            proof_sources=["AIS", "RADAR", "EO"],
+            refusal_available=True,
+            execution_origin="present_state",
+            civilian_class_protected=True,
+        )
+        self.assertEqual(bind_trace["violation_class"], "MISSION_SCOPE_EXPANSION")
+        self.assertEqual(bind_trace["violation_classes"], ["MISSION_SCOPE_EXPANSION"])
+
     def test_record_event_status_active_and_failed(self) -> None:
         pass_trace = build_bind_trace(
             vessel_id="RS-HUM-PASS",

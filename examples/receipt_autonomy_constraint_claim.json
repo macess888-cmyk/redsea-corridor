@@ -1,0 +1,15 @@
+{
+  "vessel_id": "AUTO-CLAIM-001",
+  "classification": "CIV",
+  "event_type": "HALT",
+  "location": "1.0000,1.0000",
+  "description": "Autonomy constraint claim halted because constrained execution expanded at bind under carried-state execution with refusal unavailable.",
+  "mission_expected": "ESCORT",
+  "mission_actual": "EXPANDED",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": false,
+  "execution_origin": "carried_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

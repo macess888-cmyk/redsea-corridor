@@ -1,0 +1,20 @@
+{
+  "event_type": "ENTRY",
+  "vessel_id": "AI-CLAIM-001",
+  "imo": "IMO9600001",
+  "classification": "CIV",
+  "flag": "SYS",
+  "entry_point": "MODEL_DEPLOYMENT",
+  "exit_point": "PRODUCTION_OUTPUT",
+  "eta_start": "2026-04-14T00:00:00+00:00",
+  "eta_end": "2026-04-14T08:00:00+00:00",
+  "declared_path": "LINESTRING(0.0 0.0, 1.0 1.0)",
+  "mission_expected": "ESCORT",
+  "mission_actual": "EXPANDED",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": false,
+  "execution_origin": "carried_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

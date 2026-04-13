@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
+from corridor.schema import format_errors, validate_json_file
 from corridor.main import (
     ARTIFACTS_DIR,
     build_bind_trace,
@@ -160,6 +161,10 @@ def add_receipt(
 
 
 def run_event_json(path: str) -> Dict[str, Any]:
+    errors = validate_json_file(path, mode="event")
+    if errors:
+        raise ValueError("Event JSON validation failed:\n" + format_errors(errors))
+
     data = load_json(path)
     return add_event(
         event_type=str(data["event_type"]).upper(),
@@ -184,6 +189,10 @@ def run_event_json(path: str) -> Dict[str, Any]:
 
 
 def run_receipt_json(path: str) -> Dict[str, Any]:
+    errors = validate_json_file(path, mode="receipt")
+    if errors:
+        raise ValueError("Receipt JSON validation failed:\n" + format_errors(errors))
+
     data = load_json(path)
     return add_receipt(
         vessel_id=data["vessel_id"],

@@ -1,0 +1,15 @@
+{
+  "vessel_id": "RS-BAD-001",
+  "classification": "BOGUS",
+  "event_type": "BROKEN",
+  "location": 12345,
+  "description": false,
+  "mission_expected": "ATTACK",
+  "mission_actual": "UNKNOWN",
+  "proof_sources": ["AIS", 99, "NOPE"],
+  "refusal_available": "no",
+  "execution_origin": "future_state",
+  "civilian_class_protected": "false",
+  "classification_valid": "false",
+  "route_window_valid": "false"
+}

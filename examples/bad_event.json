@@ -1,0 +1,17 @@
+{
+  "event_type": "LAUNCH",
+  "vessel_id": 123,
+  "imo": "IMO9999999",
+  "classification": "XYZ",
+  "flag": "UN",
+  "entry_point": "BAB_EL_MANDEB_SOUTH",
+  "declared_path": "LINESTRING(43.2 12.5, 44.1 13.0)",
+  "mission_expected": "ATTACK",
+  "mission_actual": "EXPANDED",
+  "proof_sources": "AIS,RADAR",
+  "refusal_available": "yes",
+  "execution_origin": "future_state",
+  "civilian_class_protected": "true",
+  "classification_valid": 1,
+  "route_window_valid": null
+}

@@ -20,15 +20,18 @@ class CorridorTestCase(unittest.TestCase):
         self.original_artifacts = main_mod.ARTIFACTS_DIR
         self.original_receipts = main_mod.RECEIPTS_DIR
         self.original_ledger = main_mod.LEDGER_PATH
+        self.original_index = main_mod.RECEIPT_INDEX_PATH
 
         main_mod.ARTIFACTS_DIR = self.artifacts_dir
         main_mod.RECEIPTS_DIR = self.receipts_dir
         main_mod.LEDGER_PATH = self.artifacts_dir / "corridor_ledger.jsonl"
+        main_mod.RECEIPT_INDEX_PATH = self.receipts_dir / "receipt_index.jsonl"
 
     def tearDown(self) -> None:
         main_mod.ARTIFACTS_DIR = self.original_artifacts
         main_mod.RECEIPTS_DIR = self.original_receipts
         main_mod.LEDGER_PATH = self.original_ledger
+        main_mod.RECEIPT_INDEX_PATH = self.original_index
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_validate_event_data_pass(self) -> None:
@@ -177,7 +180,7 @@ class CorridorTestCase(unittest.TestCase):
         )
         self.assertEqual(fail_entry["status"], "FAILED")
 
-    def test_receipt_chain(self) -> None:
+    def test_receipt_chain_with_index(self) -> None:
         pass_trace = build_bind_trace(
             vessel_id="RS-HUM-R1",
             classification="HUM",
@@ -222,15 +225,23 @@ class CorridorTestCase(unittest.TestCase):
             sources=["AIS", "RADAR"],
         )
 
-        self.assertEqual(r1["previous_receipt_hash"], "GENESIS")
-        self.assertEqual(r2["previous_receipt_hash"], r1["current_receipt_hash"])
+        index_path = self.receipts_dir / "receipt_index.jsonl"
+        self.assertTrue(index_path.exists())
+
+        rows = []
+        with index_path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    rows.append(json.loads(line))
+
+        self.assertEqual(len(rows), 2)
+
+        first_receipt = json.loads(Path(rows[0]["path"]).read_text(encoding="utf-8"))
+        second_receipt = json.loads(Path(rows[1]["path"]).read_text(encoding="utf-8"))
+
+        self.assertEqual(second_receipt["previous_receipt_hash"], first_receipt["current_receipt_hash"])
         self.assertEqual(r2["outcome"], "FAIL")
-
-        files = sorted(self.receipts_dir.glob("*.json"))
-        self.assertEqual(len(files), 2)
-
-        loaded = [json.loads(p.read_text(encoding="utf-8")) for p in files]
-        self.assertEqual(loaded[1]["previous_receipt_hash"], loaded[0]["current_receipt_hash"])
 
 
 if __name__ == "__main__":

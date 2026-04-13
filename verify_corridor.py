@@ -7,6 +7,7 @@ from typing import Any, Dict, List
 ARTIFACTS_DIR = Path("artifacts")
 RECEIPTS_DIR = Path("receipts")
 LEDGER_PATH = ARTIFACTS_DIR / "corridor_ledger.jsonl"
+RECEIPT_INDEX_PATH = RECEIPTS_DIR / "receipt_index.jsonl"
 
 
 def canonical_json(data: Dict[str, Any]) -> str:
@@ -31,6 +32,18 @@ def load_ledger() -> List[Dict[str, Any]]:
             if line:
                 entries.append(json.loads(line))
     return entries
+
+
+def load_receipt_index() -> List[Dict[str, str]]:
+    if not RECEIPT_INDEX_PATH.exists():
+        raise FileNotFoundError(f"Missing receipt index: {RECEIPT_INDEX_PATH}")
+    rows: List[Dict[str, str]] = []
+    with RECEIPT_INDEX_PATH.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
 
 
 def verify_ledger(entries: List[Dict[str, Any]]) -> None:
@@ -66,13 +79,15 @@ def verify_status_rules(entries: List[Dict[str, Any]]) -> None:
 
 
 def verify_receipts() -> None:
+    index_rows = load_receipt_index()
     previous = "GENESIS"
-    files = sorted(RECEIPTS_DIR.glob("*.json"))
-    if not files:
-        raise FileNotFoundError("No receipts found")
 
-    for path in files:
-        receipt = json.loads(path.read_text(encoding="utf-8"))
+    for idx, row in enumerate(index_rows):
+        receipt_path = Path(row["path"])
+        if not receipt_path.exists():
+            raise ValueError(f"Indexed receipt missing at index {idx}: {receipt_path}")
+
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
         core = {
             k: v for k, v in receipt.items()
             if k not in {"previous_receipt_hash", "current_receipt_hash"}
@@ -80,16 +95,22 @@ def verify_receipts() -> None:
         expected_hash = chained_hash(previous, core)
 
         if receipt["previous_receipt_hash"] != previous:
-            raise ValueError(f"Receipt chain break at {path.name}: previous hash mismatch")
+            raise ValueError(f"Receipt chain break at index {idx}: previous hash mismatch")
 
         if receipt["current_receipt_hash"] != expected_hash:
-            raise ValueError(f"Receipt chain break at {path.name}: current hash mismatch")
+            raise ValueError(f"Receipt chain break at index {idx}: current hash mismatch")
 
         if "violation_classes" not in receipt:
-            raise ValueError(f"Missing violation_classes in {path.name}")
+            raise ValueError(f"Missing violation_classes at index {idx}")
 
         if not isinstance(receipt["violation_classes"], list):
-            raise ValueError(f"violation_classes must be a list in {path.name}")
+            raise ValueError(f"violation_classes must be a list at index {idx}")
+
+        if row.get("receipt_id") != receipt.get("receipt_id"):
+            raise ValueError(f"Receipt index mismatch at index {idx}: receipt_id differs")
+
+        if row.get("current_receipt_hash") != receipt.get("current_receipt_hash"):
+            raise ValueError(f"Receipt index mismatch at index {idx}: hash differs")
 
         previous = receipt["current_receipt_hash"]
 
@@ -100,7 +121,7 @@ def main() -> None:
     verify_bind_trace_refs(entries)
     verify_status_rules(entries)
     verify_receipts()
-    print("PASS: ledger, bind refs, status rules, receipt chain, and multi-violation fields verified.")
+    print("PASS: ledger, bind refs, status rules, receipt index, receipt chain, and multi-violation fields verified.")
 
 
 if __name__ == "__main__":

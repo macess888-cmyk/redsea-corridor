@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 ARTIFACTS_DIR = Path("artifacts")
 RECEIPTS_DIR = Path("receipts")
 LEDGER_PATH = ARTIFACTS_DIR / "corridor_ledger.jsonl"
+RECEIPT_INDEX_PATH = RECEIPTS_DIR / "receipt_index.jsonl"
 
 
 def utc_now() -> str:
@@ -57,6 +58,36 @@ def append_ledger_entry(entry: Dict[str, Any]) -> None:
 
 def validate_classification(classification: str) -> bool:
     return classification in {"HUM", "CIV", "MIL"}
+
+
+def load_receipt_index() -> List[Dict[str, str]]:
+    if not RECEIPT_INDEX_PATH.exists():
+        return []
+    rows: List[Dict[str, str]] = []
+    with RECEIPT_INDEX_PATH.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
+def append_receipt_index(entry: Dict[str, str]) -> None:
+    with RECEIPT_INDEX_PATH.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def get_previous_receipt_hash() -> str:
+    index_rows = load_receipt_index()
+    if not index_rows:
+        return "GENESIS"
+
+    last_path = Path(index_rows[-1]["path"])
+    if not last_path.exists():
+        raise FileNotFoundError(f"Indexed receipt missing: {last_path}")
+
+    last_receipt = json.loads(last_path.read_text(encoding="utf-8"))
+    return last_receipt["current_receipt_hash"]
 
 
 def build_bind_trace(
@@ -225,12 +256,7 @@ def build_receipt(
     if receipt_path.exists():
         raise FileExistsError(f"Receipt path already exists: {receipt_path}")
 
-    previous_hash = "GENESIS"
-    existing = sorted(RECEIPTS_DIR.glob("*.json"))
-    if existing:
-        last_receipt = json.loads(existing[-1].read_text(encoding="utf-8"))
-        previous_hash = last_receipt["current_receipt_hash"]
-
+    previous_hash = get_previous_receipt_hash()
     current_hash = chained_hash(previous_hash, receipt_core)
 
     receipt = {
@@ -239,6 +265,14 @@ def build_receipt(
         "current_receipt_hash": current_hash,
     }
     write_json(receipt_path, receipt)
+
+    append_receipt_index({
+        "receipt_id": receipt["receipt_id"],
+        "path": str(receipt_path),
+        "current_receipt_hash": receipt["current_receipt_hash"],
+        "timestamp_utc": receipt["timestamp_utc"],
+    })
+
     return receipt
 
 
@@ -345,6 +379,7 @@ def run_demo() -> None:
     print(f" - {LEDGER_PATH}")
     print(f" - {ARTIFACTS_DIR / 'run_summary.json'}")
     print(f" - {RECEIPTS_DIR}")
+    print(f" - {RECEIPT_INDEX_PATH}")
 
 
 if __name__ == "__main__":

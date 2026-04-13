@@ -9,6 +9,8 @@ from corridor.schema import format_errors, validate_json_file
 from corridor.main import (
     ARTIFACTS_DIR,
     RECEIPTS_DIR,
+    LEDGER_PATH,
+    RECEIPT_INDEX_PATH,
     build_bind_trace,
     build_receipt,
     ensure_dirs,
@@ -46,6 +48,51 @@ def reset_runtime() -> None:
     print("Runtime reset complete.")
     print(f" - {ARTIFACTS_DIR}")
     print(f" - {RECEIPTS_DIR}")
+
+
+def runtime_status() -> None:
+    artifacts_exists = ARTIFACTS_DIR.exists()
+    receipts_exists = RECEIPTS_DIR.exists()
+    ledger_exists = LEDGER_PATH.exists()
+    receipt_index_exists = RECEIPT_INDEX_PATH.exists()
+
+    receipt_files = []
+    if receipts_exists:
+        receipt_files = [
+            p for p in RECEIPTS_DIR.glob("*.json")
+            if p.name != "receipt_index.jsonl"
+        ]
+
+    ledger_entries = 0
+    if ledger_exists:
+        with LEDGER_PATH.open("r", encoding="utf-8") as f:
+            ledger_entries = sum(1 for line in f if line.strip())
+
+    receipt_index_entries = 0
+    if receipt_index_exists:
+        with RECEIPT_INDEX_PATH.open("r", encoding="utf-8") as f:
+            receipt_index_entries = sum(1 for line in f if line.strip())
+
+    if ledger_exists and receipt_index_exists and ledger_entries > 0 and receipt_index_entries > 0:
+        state = "READY"
+    else:
+        state = "HOLD"
+
+    print("Runtime status:")
+    print(f" - artifacts_dir: {'present' if artifacts_exists else 'missing'}")
+    print(f" - receipts_dir: {'present' if receipts_exists else 'missing'}")
+    print(f" - ledger: {'present' if ledger_exists else 'missing'}")
+    print(f" - ledger_entries: {ledger_entries}")
+    print(f" - receipt_index: {'present' if receipt_index_exists else 'missing'}")
+    print(f" - receipt_index_entries: {receipt_index_entries}")
+    print(f" - receipt_files: {len(receipt_files)}")
+    print(f" - state: {state}")
+
+    if state == "HOLD":
+        print("Guidance:")
+        print(" - run: python -m corridor.cli event-json --file examples\\event_pass.json")
+        print(" - then: python -m corridor.cli receipt-json --file examples\\receipt_pass.json")
+        print(" - or: run_all.bat")
 
 
 def add_event(
@@ -277,6 +324,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("verify")
     sub.add_parser("reset-runtime")
     sub.add_parser("run-all")
+    sub.add_parser("status")
 
     event_json = sub.add_parser("event-json")
     event_json.add_argument("--file", required=True)
@@ -306,6 +354,10 @@ def main() -> None:
 
     if args.command == "run-all":
         run_all()
+        return
+
+    if args.command == "status":
+        runtime_status()
         return
 
     if args.command == "event-json":

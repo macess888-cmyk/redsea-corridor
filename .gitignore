@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 artifacts/
 receipts/
+examples/event_pass.json
+examples/event_fail.json
+examples/receipt_pass.json
+examples/receipt_fail.json

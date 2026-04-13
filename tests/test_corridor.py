@@ -171,6 +171,29 @@ class CorridorTestCase(unittest.TestCase):
         self.assertEqual(bind_trace["violation_class"], "MISSION_SCOPE_EXPANSION")
         self.assertEqual(bind_trace["violation_classes"], ["MISSION_SCOPE_EXPANSION"])
 
+    def test_universal_cross_zone_drift_fail(self) -> None:
+        bind_trace = build_bind_trace(
+            vessel_id="UNIV-DRIFT-001",
+            classification="CIV",
+            mission_type_expected="ESCORT",
+            mission_type_actual="EXPANDED",
+            route_window_valid=True,
+            classification_valid=True,
+            proof_sources=["AIS", "RADAR", "EO"],
+            refusal_available=False,
+            execution_origin="carried_state",
+            civilian_class_protected=True,
+        )
+        self.assertEqual(bind_trace["violation_class"], "REFUSAL_UNAVAILABLE_AT_BIND")
+        self.assertEqual(
+            bind_trace["violation_classes"],
+            [
+                "REFUSAL_UNAVAILABLE_AT_BIND",
+                "CARRIED_STATE_EXECUTION",
+                "MISSION_SCOPE_EXPANSION",
+            ],
+        )
+
     def test_record_event_status_active_and_failed(self) -> None:
         pass_trace = build_bind_trace(
             vessel_id="RS-HUM-PASS",

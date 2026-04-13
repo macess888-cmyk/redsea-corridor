@@ -24,7 +24,12 @@ def chained_hash(previous_hash: str, record: Dict[str, Any]) -> str:
 
 def load_ledger() -> List[Dict[str, Any]]:
     if not LEDGER_PATH.exists():
-        raise FileNotFoundError(f"Missing ledger: {LEDGER_PATH}")
+        print("HOLD: no ledger found (corridor_ledger.jsonl missing)")
+        print("→ run: python -m corridor.cli event-json --file examples\\event_pass.json")
+        print("→ then: python -m corridor.cli receipt-json --file examples\\receipt_pass.json")
+        print("→ or: run_all.bat")
+        return []
+
     entries: List[Dict[str, Any]] = []
     with LEDGER_PATH.open("r", encoding="utf-8") as f:
         for line in f:
@@ -40,6 +45,7 @@ def load_receipt_index() -> List[Dict[str, str]]:
         print("→ run: python -m corridor.cli receipt-json --file examples\\receipt_pass.json")
         print("→ or: run_all.bat")
         return []
+
     rows: List[Dict[str, str]] = []
     with RECEIPT_INDEX_PATH.open("r", encoding="utf-8") as f:
         for line in f:
@@ -81,10 +87,10 @@ def verify_status_rules(entries: List[Dict[str, Any]]) -> None:
             raise ValueError(f"EXIT must end COMPLETE or FAILED at index {idx}")
 
 
-def verify_receipts() -> None:
+def verify_receipts() -> bool:
     index_rows = load_receipt_index()
     if not index_rows:
-        return
+        return False
 
     previous = "GENESIS"
 
@@ -120,13 +126,22 @@ def verify_receipts() -> None:
 
         previous = receipt["current_receipt_hash"]
 
+    return True
+
 
 def main() -> None:
     entries = load_ledger()
+    if not entries:
+        return
+
     verify_ledger(entries)
     verify_bind_trace_refs(entries)
     verify_status_rules(entries)
-    verify_receipts()
+
+    has_receipts = verify_receipts()
+    if not has_receipts:
+        return
+
     print("PASS: ledger, bind refs, status rules, receipt index, receipt chain, and multi-violation fields verified.")
 
 

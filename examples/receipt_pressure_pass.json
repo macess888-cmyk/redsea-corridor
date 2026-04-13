@@ -1,0 +1,15 @@
+{
+  "vessel_id": "PRESSURE-PASS-001",
+  "classification": "CIV",
+  "event_type": "SAFE_PASSAGE",
+  "location": "15.0000,15.0000",
+  "description": "High-pressure corridor case completed without scope drift; present-state proof held and refusal remained available at bind.",
+  "mission_expected": "ESCORT",
+  "mission_actual": "ESCORT",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": true,
+  "execution_origin": "present_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

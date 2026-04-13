@@ -1,0 +1,20 @@
+{
+  "event_type": "ENTRY",
+  "vessel_id": "PRESSURE-PASS-001",
+  "imo": "IMO9800001",
+  "classification": "CIV",
+  "flag": "MT",
+  "entry_point": "HIGH_RISK_ENTRY",
+  "exit_point": "HIGH_RISK_EXIT",
+  "eta_start": "2026-04-14T00:00:00+00:00",
+  "eta_end": "2026-04-14T06:00:00+00:00",
+  "declared_path": "LINESTRING(10.0 10.0, 20.0 20.0)",
+  "mission_expected": "ESCORT",
+  "mission_actual": "ESCORT",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": true,
+  "execution_origin": "present_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

@@ -1,0 +1,15 @@
+{
+  "vessel_id": "RS-ADV-001",
+  "classification": "CIV",
+  "event_type": "HALT",
+  "location": "12.9000,43.7000",
+  "description": "Adversarial scenario halted due to multi-boundary failure at bind.",
+  "mission_expected": "ESCORT",
+  "mission_actual": "EXPANDED",
+  "proof_sources": [],
+  "refusal_available": false,
+  "execution_origin": "carried_state",
+  "civilian_class_protected": false,
+  "classification_valid": false,
+  "route_window_valid": false
+}

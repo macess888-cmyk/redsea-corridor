@@ -1,0 +1,15 @@
+{
+  "vessel_id": "RS-ADV-REFUSAL-001",
+  "classification": "CIV",
+  "event_type": "HALT",
+  "location": "12.9000,43.7001",
+  "description": "Refusal-fail scenario halted at bind.",
+  "mission_expected": "ESCORT",
+  "mission_actual": "ESCORT",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": false,
+  "execution_origin": "present_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

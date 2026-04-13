@@ -1,0 +1,20 @@
+{
+  "event_type": "ENTRY",
+  "vessel_id": "RS-ADV-001",
+  "imo": "IMO7777777",
+  "classification": "CIV",
+  "flag": "PA",
+  "entry_point": "BAB_EL_MANDEB_SOUTH",
+  "exit_point": "GULF_OF_ADEN_EAST",
+  "eta_start": "2026-04-12T00:00:00+00:00",
+  "eta_end": "2026-04-12T06:00:00+00:00",
+  "declared_path": "LINESTRING(43.2 12.5, 44.1 13.0)",
+  "mission_expected": "ESCORT",
+  "mission_actual": "EXPANDED",
+  "proof_sources": [],
+  "refusal_available": false,
+  "execution_origin": "carried_state",
+  "civilian_class_protected": false,
+  "classification_valid": false,
+  "route_window_valid": false
+}

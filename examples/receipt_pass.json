@@ -1,0 +1,15 @@
+{
+  "vessel_id": "RS-HUM-JSON-001",
+  "classification": "HUM",
+  "event_type": "SAFE_PASSAGE",
+  "location": "13.0000,43.8000",
+  "description": "Humanitarian vessel completed protected corridor passage.",
+  "mission_expected": "ESCORT",
+  "mission_actual": "ESCORT",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": true,
+  "execution_origin": "present_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

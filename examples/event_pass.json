@@ -1,0 +1,20 @@
+{
+  "event_type": "ENTRY",
+  "vessel_id": "RS-HUM-JSON-001",
+  "imo": "IMO4444444",
+  "classification": "HUM",
+  "flag": "UN",
+  "entry_point": "BAB_EL_MANDEB_SOUTH",
+  "exit_point": "GULF_OF_ADEN_EAST",
+  "eta_start": "2026-04-12T00:00:00+00:00",
+  "eta_end": "2026-04-12T06:00:00+00:00",
+  "declared_path": "LINESTRING(43.2 12.5, 44.1 13.0)",
+  "mission_expected": "ESCORT",
+  "mission_actual": "ESCORT",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": true,
+  "execution_origin": "present_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

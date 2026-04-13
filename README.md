@@ -1,21 +1,15 @@
 [![CI](https://github.com/macess888-cmyk/redsea-corridor/actions/workflows/ci.yml/badge.svg)](https://github.com/macess888-cmyk/redsea-corridor/actions/workflows/ci.yml)
 
-# Red Sea Corridor — Execution-Bound Admissibility System
+## Download Verifier Bundle
 
-This project implements a containment-first corridor governance system with:
+[Download v0.1.0 Verifier Bundle](https://github.com/macess888-cmyk/redsea-corridor/releases/download/v0.1.0/redsea-corridor-verifier-bundle-v0.1.0.zip)
 
-- execution-bound admissibility (t3 bind)
-- fail-closed behavior
-- multi-violation classification
-- deterministic audit chain (ledger + receipts)
-- schema validation (pre-execution)
-- reproducible artifacts only (no hidden state)
+SHA-256:
+https://github.com/macess888-cmyk/redsea-corridor/releases/download/v0.1.0/redsea-corridor-verifier-bundle-v0.1.0.zip.sha256
 
----
+### Quick Start (Offline Verification)
 
-## Core Commands
-
-### Run full system (recommended)
+After downloading:
 
 ```bat
-run_all.bat
+verify_bundle.bat

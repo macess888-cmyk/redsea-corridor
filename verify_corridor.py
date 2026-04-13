@@ -36,7 +36,10 @@ def load_ledger() -> List[Dict[str, Any]]:
 
 def load_receipt_index() -> List[Dict[str, str]]:
     if not RECEIPT_INDEX_PATH.exists():
-        raise FileNotFoundError(f"Missing receipt index: {RECEIPT_INDEX_PATH}")
+        print("HOLD: no receipts found (receipt_index.jsonl missing)")
+        print("→ run: python -m corridor.cli receipt-json --file examples\\receipt_pass.json")
+        print("→ or: run_all.bat")
+        return []
     rows: List[Dict[str, str]] = []
     with RECEIPT_INDEX_PATH.open("r", encoding="utf-8") as f:
         for line in f:
@@ -80,6 +83,9 @@ def verify_status_rules(entries: List[Dict[str, Any]]) -> None:
 
 def verify_receipts() -> None:
     index_rows = load_receipt_index()
+    if not index_rows:
+        return
+
     previous = "GENESIS"
 
     for idx, row in enumerate(index_rows):

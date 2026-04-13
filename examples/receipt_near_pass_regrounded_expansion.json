@@ -1,0 +1,15 @@
+{
+  "vessel_id": "RS-NEARPASS-001",
+  "classification": "CIV",
+  "event_type": "HALT",
+  "location": "0.5000,0.5000",
+  "description": "Near-pass scenario halted because mission expanded despite present-state proof and refusal remaining available.",
+  "mission_expected": "ESCORT",
+  "mission_actual": "EXPANDED",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": true,
+  "execution_origin": "present_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

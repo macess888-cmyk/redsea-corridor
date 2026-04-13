@@ -1,9 +1,21 @@
-.venv/
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+
+# Generated runtime data (do not track)
 artifacts/
 receipts/
-examples/event_pass.json
-examples/event_fail.json
-examples/receipt_pass.json
-examples/receipt_fail.json
+dist/
+
+# OS / editor
+Thumbs.db
+.DS_Store
+
+# Temporary / accidental files
+git
+master

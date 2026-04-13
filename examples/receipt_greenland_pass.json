@@ -1,0 +1,15 @@
+{
+  "vessel_id": "GL-PASS-001",
+  "classification": "CIV",
+  "event_type": "SAFE_PASSAGE",
+  "location": "64.2000,-51.7000",
+  "description": "Greenland corridor action remained within declared civilian protection scope under present-state proof and retained refusal at bind.",
+  "mission_expected": "ESCORT",
+  "mission_actual": "ESCORT",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": true,
+  "execution_origin": "present_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

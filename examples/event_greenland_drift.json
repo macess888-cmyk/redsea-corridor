@@ -1,0 +1,20 @@
+{
+  "event_type": "ENTRY",
+  "vessel_id": "GL-DRIFT-001",
+  "imo": "IMO9100002",
+  "classification": "CIV",
+  "flag": "DK",
+  "entry_point": "NUUK_POLICY_GATE",
+  "exit_point": "ARCTIC_TRANSIT_EAST",
+  "eta_start": "2026-04-13T00:00:00+00:00",
+  "eta_end": "2026-04-13T12:00:00+00:00",
+  "declared_path": "LINESTRING(-51.7 64.2, -45.0 66.0)",
+  "mission_expected": "ESCORT",
+  "mission_actual": "EXPANDED",
+  "proof_sources": ["AIS", "RADAR", "EO"],
+  "refusal_available": false,
+  "execution_origin": "carried_state",
+  "civilian_class_protected": true,
+  "classification_valid": true,
+  "route_window_valid": true
+}

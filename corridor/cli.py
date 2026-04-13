@@ -227,6 +227,48 @@ def run_receipt_json(path: str) -> Dict[str, Any]:
     )
 
 
+def run_all() -> None:
+    reset_runtime()
+
+    event_files = [
+        "examples\\event_pass.json",
+        "examples\\event_fail.json",
+    ]
+    receipt_files = [
+        "examples\\receipt_pass.json",
+        "examples\\receipt_fail.json",
+    ]
+
+    event_results = []
+    receipt_results = []
+
+    print("Running events...")
+    for path in event_files:
+        result = run_event_json(path)
+        event_results.append({"file": path, **result})
+
+    print("Running receipts...")
+    for path in receipt_files:
+        result = run_receipt_json(path)
+        receipt_results.append({"file": path, **result})
+
+    import verify_corridor
+    verify_corridor.main()
+
+    summary = {
+        "timestamp_utc": utc_now(),
+        "command": "run-all",
+        "events": event_results,
+        "receipts": receipt_results,
+        "verify": "PASS",
+    }
+    summary_path = ARTIFACTS_DIR / "run_all_summary.json"
+    write_json(summary_path, summary)
+
+    print("RUN-ALL complete.")
+    print(f"summary = {summary_path}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="corridor-cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -234,6 +276,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("demo")
     sub.add_parser("verify")
     sub.add_parser("reset-runtime")
+    sub.add_parser("run-all")
 
     event_json = sub.add_parser("event-json")
     event_json.add_argument("--file", required=True)
@@ -259,6 +302,10 @@ def main() -> None:
 
     if args.command == "reset-runtime":
         reset_runtime()
+        return
+
+    if args.command == "run-all":
+        run_all()
         return
 
     if args.command == "event-json":

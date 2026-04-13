@@ -1,3 +1,5 @@
+[![CI](https://github.com/macess888-cmyk/redsea-corridor/actions/workflows/ci.yml/badge.svg)](https://github.com/macess888-cmyk/redsea-corridor/actions/workflows/ci.yml)
+
 # Red Sea Corridor — Execution-Bound Admissibility System
 
 This project implements a containment-first corridor governance system with:
